@@ -11,7 +11,20 @@ zopfli if a few bytes over: pip install zopfli), zero-pads to the original
 slot, verifies the round trip and writes an archive with the ORIGINAL
 header/TOC/layout untouched. Refuses to write if a site is missing or ambiguous.
 
-Patches
+Patches (one table run against all three assets; each pattern matches only its own)
+  offline-warning        common/ui/node_cfm/hub/corenode.ast  (from No Offline Warning v1.0; merged v1.1.0)
+        art_control.button.DynastyPlayButton press handler: the second operand
+        of the offline check (`!IsPopupShowing(EXIT_POPUP) == true`) becomes
+        `== false`, so the "Proceed Without Rewards" popup is skipped and the
+        normal start-game path runs.                            0x73 -> 0x74
+  account-error          common/ui/node_com/scriptpod.ast     (from No Offline Warning v1.1; merged v1.1.0)
+        madden.online.module.Login._ShowLoginFailedPopup: the gate
+        `if (mShowLoginFailedPopup == true)` becomes
+        `if (true < mShowLoginFailedPopup)`, never true, so the "ACCOUNT ERROR"
+        login-failure popup (the one MMC fills with "Mods require being
+        offline...") is never opened. The failure callback before the gate is
+        untouched, so login flows still complete.               0x49 -> 0x48
+        zlib-9 lands 1 byte over the slot -> zopfli + zero pad (proven in-game).
   skill-upgrade-success  common/ui/node_cfm/corenode.ast   (added v1.0, tu0926)
         logic_cfm.model.manageplayer.Skills._HandlePlayerDetailsAdapterEvents:
         on NOTIFY_COMMANDCOMPLETE for COMMAND_UPGRADESKILLBUCKET the handler
@@ -37,6 +50,18 @@ import argparse, importlib.util, os, struct, sys, zlib
 
 PATCHES = [
     dict(
+        name="offline-warning popup (node_cfm/hub/corenode.ast)",
+        # tu1013 site 145869
+        pattern=bytes.fromhex("49124cb8000000100000001773b901af225ab901af86a2eb524912b8"),
+        index=12, old=0x73, new=0x74, known_offset=None,
+    ),
+    dict(
+        name="account-error popup (node_com/scriptpod.ast)",
+        # ... 5a b9 01 b2 e6 | 73 b9 01 af 48 [49] b8 00 00 7a 00 00 00 b9 01 af 20 ...   tu1013 site 1052596
+        pattern=bytes.fromhex("5ab901b2e673b901af4849b800007a000000b901af20"),
+        index=10, old=0x49, new=0x48, known_offset=None,
+    ),
+    dict(
         name="skill-upgrade-success popup (node_cfm/corenode.ast)",
         # 348217 b9 06 | b9 03 | 9d 00 00 [10 00 00 00]          PushRegister msg; PushRegister success; BranchIfTrue +16
         # 348228 ad 03 7b 83 d9 | 99 00..00 [05 00 00 00]         VarPath loc.Main.ERROR; BranchAlways +5
@@ -51,7 +76,7 @@ PATCHES = [
         index=0,
         old=bytes.fromhex("b906b9039d000010000000ad037b83d99900000000000005000000"),
         new=bytes.fromhex("b9 03 9d 00 00 00 00 36 00 00 00 b9 06 ad 03 7b 83 d9 99 00 00 00 00 05 00 00 00"),
-        known_offset=348217,  # tu0926 (September 26, 2026 title update)
+        known_offset=None,  # tu1013 site 346401 (tu0926: 348217) - pattern only, see docstring
     ),
 ]
 
