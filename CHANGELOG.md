@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.1 – 2026-11-20
+- Rebuilt for the **November 17, 2026 title update**. EA changed `common/ui/node_com/main.ast` (two numeric constants in its script data, away from the code this mod adds); the other three files are byte-identical to October 29. All four re-exported from the update and rebuilt with the same edits at the same offsets (145869 / 346401 / 1052596; class overrides appended at the same positions). No functional changes.
+
 ## 1.2.0 – 2026-11-08
 - **The OFFLINE WARNING fix now survives mods that replace `common/ui/node_cfm/hub/corenode.ast`** (for example AIO Dynasty). Before this, any such mod loaded at a higher priority brought the popup back. Popup Remover now also ships **`common/ui/node_com/main.ast`**, which defines the Dynasty Play button's class with the offline check already patched, before the hub loads. The game defines that class only if it doesn't exist yet, so the hub's copy (ours or another mod's) skips itself. Tested in-game alone and with AIO Dynasty v1.4.1 at priority 1.
 - **The skill-upgrade SUCCESS fix now survives mods that replace `common/ui/node_cfm/corenode.ast`** (AIO Dynasty ships that too). Same technique: `common/ui/node_com/scriptpod.ast` now also defines the `Skills` class with the SUCCESS fix applied, right after the first class there that shares its parent class, so it's defined before Dynasty loads. Tested in-game with AIO Dynasty v1.4.1 at priority 1.
